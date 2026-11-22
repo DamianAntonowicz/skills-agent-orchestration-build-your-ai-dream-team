@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Project Pulse</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="page-header">
+    <h1 class="page-title">Project Pulse</h1>
+    <p class="page-subtitle">Loading projects…</p>
+    <ul class="summary-stats"></ul>
+  </header>
+  <main>
+    <section class="dashboard" aria-label="Projects"></section>
+  </main>
+
+  <script>
+    (function () {
+      "use strict";
+
+      var DATA_URL = "project-data.json";
+      var STATUS_SLUGS = { "on track": "on-track", "at risk": "at-risk", "blocked": "blocked", "done": "done" };
+      var STATUS_ORDER = ["On Track", "At Risk", "Blocked", "Done"];
+      var PRIORITY_SLUGS = { "high": "high", "medium": "medium", "low": "low" };
+      var REQUIRED_FIELDS = ["name", "owner", "status", "recentActivity", "priority"];
+
+      function slugFor(map, value) {
+        return map[String(value).trim().toLowerCase()] || "";
+      }
+
+      function validateProjects(data) {
+        if (!data || !Array.isArray(data.projects)) {
+          throw new Error("project-data.json must contain a top-level \"projects\" array.");
+        }
+        data.projects.forEach(function (project, index) {
+          if (!project || typeof project !== "object") {
+            throw new Error("Project at index " + index + " is not an object.");
+          }
+          REQUIRED_FIELDS.forEach(function (field) {
+            if (typeof project[field] !== "string" || project[field].trim() === "") {
+              throw new Error("Project at index " + index + " is missing a valid \"" + field + "\" field.");
+            }
+          });
+        });
+        return data.projects;
+      }
+
+      function createElement(tag, className, text) {
+        var element = document.createElement(tag);
+        if (className) { element.className = className; }
+        if (text !== undefined) { element.textContent = text; }
+        return element;
+      }
+
+      function createProjectCard(project) {
+        var statusSlug = slugFor(STATUS_SLUGS, project.status);
+        var prioritySlug = slugFor(PRIORITY_SLUGS, project.priority);
+
+        var card = createElement("article", "project-card");
+        card.dataset.status = statusSlug;
+        card.dataset.priority = prioritySlug;
+
+        card.appendChild(createElement("h2", "project-name", project.name));
+        card.appendChild(createElement("p", "project-owner", project.owner));
+
+        var badges = createElement("div", "project-badges");
+        var statusBadge = createElement("span", "badge badge-status", project.status);
+        statusBadge.dataset.status = statusSlug;
+        var priorityBadge = createElement("span", "badge badge-priority", project.priority);
+        priorityBadge.dataset.priority = prioritySlug;
+        badges.appendChild(statusBadge);
+        badges.appendChild(priorityBadge);
+        card.appendChild(badges);
+
+        var activity = createElement("p", "project-activity");
+        activity.appendChild(createElement("span", "activity-label", "Recent activity"));
+        activity.appendChild(document.createTextNode(" " + project.recentActivity));
+        card.appendChild(activity);
+
+        return card;
+      }
+
+      function createStat(value, label) {
+        var item = createElement("li", "stat");
+        item.appendChild(createElement("span", "stat-value", String(value)));
+        item.appendChild(createElement("span", "stat-label", label));
+        return item;
+      }
+
+      function renderSummary(projects) {
+        var list = document.querySelector(".summary-stats");
+        list.textContent = "";
+        list.appendChild(createStat(projects.length, "Total projects"));
+        STATUS_ORDER.forEach(function (status) {
+          var count = projects.filter(function (p) {
+            return p.status.trim().toLowerCase() === status.toLowerCase();
+          }).length;
+          list.appendChild(createStat(count, status));
+        });
+      }
+
+      function renderDashboard(projects) {
+        var dashboard = document.querySelector(".dashboard");
+        dashboard.textContent = "";
+        projects.forEach(function (project) {
+          dashboard.appendChild(createProjectCard(project));
+        });
+        document.querySelector(".page-subtitle").textContent =
+          "Status of " + projects.length + " active " + (projects.length === 1 ? "project" : "projects");
+        renderSummary(projects);
+      }
+
+      function renderError(error) {
+        console.error("Project Pulse failed to load:", error);
+        var dashboard = document.querySelector(".dashboard");
+        dashboard.textContent = "";
+        document.querySelector(".summary-stats").textContent = "";
+        document.querySelector(".page-subtitle").textContent = "Unable to load projects";
+        var message = createElement("p", "error-message",
+          "Could not load project data (" + error.message + "). Serve this folder over HTTP, e.g. run \"python3 -m http.server 5500\" in app/.");
+        message.setAttribute("role", "alert");
+        dashboard.appendChild(message);
+      }
+
+      fetch(DATA_URL)
+        .then(function (response) {
+          if (!response.ok) {
+            throw new Error("HTTP " + response.status + " fetching " + DATA_URL);
+          }
+          return response.json();
+        })
+        .then(function (data) { renderDashboard(validateProjects(data)); })
+        .catch(renderError);
+    })();
+  </script>
+</body>
+</html>

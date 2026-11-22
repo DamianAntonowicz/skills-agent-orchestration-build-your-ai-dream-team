@@ -1,0 +1,46 @@
+{
+  "projects": [
+    {
+      "name": "Website Redesign",
+      "owner": "Mona Lisa",
+      "status": "On Track",
+      "recentActivity": "Homepage mockups approved by stakeholders.",
+      "priority": "High"
+    },
+    {
+      "name": "Mobile App Launch",
+      "owner": "Hubert Octocat",
+      "status": "At Risk",
+      "recentActivity": "App store review pushed the release date by one week.",
+      "priority": "High"
+    },
+    {
+      "name": "Billing API Migration",
+      "owner": "Priya Nair",
+      "status": "Blocked",
+      "recentActivity": "Waiting on vendor credentials to continue integration testing.",
+      "priority": "High"
+    },
+    {
+      "name": "Onboarding Docs Refresh",
+      "owner": "Sam Rivera",
+      "status": "On Track",
+      "recentActivity": "Rewrote the getting-started guide and added screenshots.",
+      "priority": "Low"
+    },
+    {
+      "name": "Analytics Dashboard",
+      "owner": "Chen Wei",
+      "status": "At Risk",
+      "recentActivity": "Data pipeline latency exceeds target; investigating caching.",
+      "priority": "Medium"
+    },
+    {
+      "name": "Security Audit 2026",
+      "owner": "Amara Okafor",
+      "status": "Done",
+      "recentActivity": "Final report delivered and all critical findings resolved.",
+      "priority": "Medium"
+    }
+  ]
+}
